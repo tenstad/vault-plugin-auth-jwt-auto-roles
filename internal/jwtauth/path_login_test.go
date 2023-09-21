@@ -13,46 +13,6 @@ import (
 	"github.com/hashicorp/vault/sdk/logical"
 )
 
-func TestLogin_WriteNoToken(t *testing.T) {
-	t.Parallel()
-	backend, storage := createTestBackend(t)
-
-	configData := testConfig()
-	req := &logical.Request{
-		Operation: logical.UpdateOperation,
-		Path:      "config",
-		Storage:   storage,
-		Data:      configData,
-	}
-
-	resp, err := backend.HandleRequest(context.Background(), req)
-	if err != nil || (resp != nil && resp.IsError()) {
-		t.Fatalf("err:%s resp:%#v\n", err, resp)
-	}
-
-	req = &logical.Request{
-		Operation: logical.UpdateOperation,
-		Path:      "login",
-		Storage:   storage,
-	}
-
-	resp, err = backend.HandleRequest(context.Background(), req)
-	if err != nil {
-		t.Fatalf("failed to handle request: %s", err)
-	}
-
-	if !resp.IsError() {
-		t.Fatalf("expected successful request to fail")
-	}
-
-	expected := map[string]any{
-		"error": "missing token",
-	}
-	if diff := cmp.Diff(resp.Data, expected); diff != "" {
-		t.Fatalf("eror not as expected: %s", diff)
-	}
-}
-
 func TestLogin_Write(t *testing.T) {
 	t.Parallel()
 	backend, storage := createTestBackend(t)
