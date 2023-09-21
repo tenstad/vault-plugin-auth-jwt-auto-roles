@@ -45,10 +45,10 @@ func TestLogin_Write(t *testing.T) {
 		t.Fatalf("err:%s resp:%#v\n", err, resp)
 	}
 
-	var fn policyFetchFn = func(_ context.Context, request schema.JwtLoginRequest) ([]string, error) {
+	var policyClient mockPolicyFetcher = func(_ context.Context, request schema.JwtLoginRequest) ([]string, error) {
 		return []string{request.Role + "-policy"}, nil
 	}
-	backend.policyClient = fn
+	backend.policyClient = policyClient
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
