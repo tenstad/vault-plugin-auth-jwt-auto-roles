@@ -11,6 +11,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/hashicorp/vault-client-go/schema"
 	"github.com/hashicorp/vault/sdk/logical"
+	mock "github.com/stretchr/testify/mock"
 )
 
 func TestLogin_WriteNoToken(t *testing.T) {
@@ -85,10 +86,13 @@ func TestLogin_Write(t *testing.T) {
 		t.Fatalf("err:%s resp:%#v\n", err, resp)
 	}
 
-	var fn policyFetchFn = func(_ context.Context, request schema.JwtLoginRequest) ([]string, error) {
-		return []string{request.Role + "-policy"}, nil
-	}
-	backend.policyClient = fn
+	policyClient := newMockPolicyFetcher(t)
+	policyClient.
+		On("policies", mock.AnythingOfType("context.backgroundCtx"), mock.AnythingOfType("schema.JwtLoginRequest")).
+		Return(func(ctx context.Context, request schema.JwtLoginRequest) ([]string, error) {
+			return []string{request.Role + "-policy"}, nil
+		})
+	backend.policyClient = policyClient
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {

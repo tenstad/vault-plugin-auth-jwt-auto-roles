@@ -1,0 +1,11 @@
+with-expecter: true
+packages:
+  github.com/statnett/vault-plugin-auth-jwt-auto-roles/internal/jwtauth:
+    config:
+      filename: mock_{{.InterfaceName}}_test.go
+    interfaces:
+      policyFetcher:
+        config:
+          dir: internal/jwtauth
+          inpackage: true
+          mockname: mockPolicyFetcher
