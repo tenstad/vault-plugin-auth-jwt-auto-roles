@@ -6,7 +6,6 @@ import (
 	"time"
 
 	jwt "github.com/golang-jwt/jwt/v5"
-	"github.com/hashicorp/vault-client-go"
 	"github.com/hashicorp/vault-client-go/schema"
 	"github.com/hashicorp/vault/sdk/framework"
 	"github.com/hashicorp/vault/sdk/logical"
@@ -86,24 +85,24 @@ func (b *multiroleJWTAuthBackend) pathLogin(
 func (b *multiroleJWTAuthBackend) policies(
 	ctx context.Context, config *multiroleJWTConfig, roles []string, token string,
 ) ([]string, error) {
-	client, err := b.getClient(config)
+	client, err := b.getPolicyClient(config)
 	if err != nil {
 		return nil, err
 	}
 
 	policies := map[string]struct{}{}
 	for _, role := range roles {
-		response, err := client.Auth.JwtLogin(ctx, schema.JwtLoginRequest{
+		rolePolicies, err := client.policies(ctx, schema.JwtLoginRequest{
 			Jwt:  token,
 			Role: role,
-		}, vault.WithMountPath(config.JWTAuthPath))
+		})
 		if err != nil {
 			continue
 			// TODO: return error if non-403
 			// return nil, err
 		}
 
-		for _, p := range response.Auth.Policies {
+		for _, p := range rolePolicies {
 			policies[p] = struct{}{}
 		}
 	}
