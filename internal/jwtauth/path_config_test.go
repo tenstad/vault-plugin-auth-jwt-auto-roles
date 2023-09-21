@@ -1,4 +1,4 @@
-package jwtauth_test
+package jwtauth
 
 import (
 	"context"
@@ -7,10 +7,7 @@ import (
 
 	"github.com/go-test/deep"
 	"github.com/hashicorp/vault/sdk/logical"
-	"github.com/statnett/vault-plugin-auth-jwt-auto-roles/internal/jwtauth"
 )
-
-const configPath = "config"
 
 func TestConfig_Write(t *testing.T) {
 	t.Parallel()
@@ -29,12 +26,12 @@ func TestConfig_Write(t *testing.T) {
 		t.Fatalf("err:%s resp:%#v\n", err, resp)
 	}
 
-	conf, err := jwtauth.ConfigMultiroleJWTAuthBackend(backend, context.Background(), storage)
+	conf, err := backend.config(context.Background(), storage)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	expected := &jwtauth.MultiroleJWTConfig{
+	expected := &multiroleJWTConfig{
 		Roles:       configData["roles"].(map[string]any),
 		JWTAuthHost: "http://localhost:8200",
 		JWTAuthPath: "foo/jwt",
@@ -96,7 +93,7 @@ func TestConfig_Delete(t *testing.T) {
 		t.Fatalf("err:%s resp:%#v\n", err, resp)
 	}
 
-	conf, err := jwtauth.ConfigMultiroleJWTAuthBackend(backend, context.Background(), storage)
+	conf, err := backend.config(context.Background(), storage)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -116,7 +113,7 @@ func TestConfig_Delete(t *testing.T) {
 		t.Fatalf("err:%s resp:%#v\n", err, resp)
 	}
 
-	conf, err = jwtauth.ConfigMultiroleJWTAuthBackend(backend, context.Background(), storage)
+	conf, err = backend.config(context.Background(), storage)
 	if err != nil {
 		t.Fatal(err)
 	}

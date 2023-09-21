@@ -118,3 +118,9 @@ func (c *vaultClient) policies(ctx context.Context, request schema.JwtLoginReque
 	}
 	return r.Auth.Policies, nil
 }
+
+type policyFetchFn func(context.Context, schema.JwtLoginRequest) ([]string, error)
+
+func (c policyFetchFn) policies(ctx context.Context, request schema.JwtLoginRequest) ([]string, error) {
+	return c(ctx, request)
+}

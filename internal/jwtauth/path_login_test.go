@@ -1,4 +1,4 @@
-package jwtauth_test
+package jwtauth
 
 import (
 	"context"
@@ -11,7 +11,6 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/hashicorp/vault-client-go/schema"
 	"github.com/hashicorp/vault/sdk/logical"
-	"github.com/statnett/vault-plugin-auth-jwt-auto-roles/internal/jwtauth"
 )
 
 func TestLogin_WriteNoToken(t *testing.T) {
@@ -86,10 +85,10 @@ func TestLogin_Write(t *testing.T) {
 		t.Fatalf("err:%s resp:%#v\n", err, resp)
 	}
 
-	var fn jwtauth.PolicyFetchFn = func(_ context.Context, request schema.JwtLoginRequest) ([]string, error) {
+	var fn policyFetchFn = func(_ context.Context, request schema.JwtLoginRequest) ([]string, error) {
 		return []string{request.Role + "-policy"}, nil
 	}
-	backend.SetPolicyFetcher(fn)
+	backend.policyClient = fn
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {

@@ -1,4 +1,4 @@
-package jwtauth_test
+package jwtauth
 
 import (
 	"context"
@@ -8,10 +8,9 @@ import (
 	log "github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/vault/sdk/helper/logging"
 	"github.com/hashicorp/vault/sdk/logical"
-	"github.com/statnett/vault-plugin-auth-jwt-auto-roles/internal/jwtauth"
 )
 
-func createTestBackend(t *testing.T) (*jwtauth.MultiroleJWTAuthBackend, logical.Storage) {
+func createTestBackend(t *testing.T) (*multiroleJWTAuthBackend, logical.Storage) {
 	config := &logical.BackendConfig{
 		Logger: logging.NewVaultLogger(log.Trace),
 
@@ -22,12 +21,12 @@ func createTestBackend(t *testing.T) (*jwtauth.MultiroleJWTAuthBackend, logical.
 		StorageView: &logical.InmemStorage{},
 	}
 
-	logicalBackend, err := jwtauth.Factory(context.Background(), config)
+	logicalBackend, err := Factory(context.Background(), config)
 	if err != nil {
 		t.Fatalf("unable to create backend: %v", err)
 	}
 
-	backend, ok := logicalBackend.(*jwtauth.MultiroleJWTAuthBackend)
+	backend, ok := logicalBackend.(*multiroleJWTAuthBackend)
 	if !ok {
 		t.Fatal("backend is not a multiroleJWTAuthBackend")
 	}
