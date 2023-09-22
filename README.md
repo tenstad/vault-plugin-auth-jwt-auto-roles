@@ -26,7 +26,7 @@ mount.
 
 ## Usage
 
-Download a
+Download and unzip a
 [release](https://github.com/statnett/vault-plugin-auth-jwt-auto-roles/releases)
 of the plugin and place it in the [plugin
 directory](https://developer.hashicorp.com/vault/docs/configuration#plugin_directory).
