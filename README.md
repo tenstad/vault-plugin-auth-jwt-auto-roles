@@ -62,6 +62,10 @@ all its roles and their bound claims:
 }
 ```
 
+Then login as with the builtin _jwt_ auth, although without the role parameter:
+
+`vault write auth/jwt-auto-roles/login jwt=$jwt`
+
 ## Future work
 
 The plugin could be configured with policies directly, instead of role names,
