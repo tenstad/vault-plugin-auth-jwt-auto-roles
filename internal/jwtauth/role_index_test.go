@@ -11,7 +11,7 @@ import (
 func TestRoleIndexer(t *testing.T) {
 	roles := map[string]any{
 		"teamb-teamb/subgroup/repoa-dev": map[string]any{
-			"project_path": []any{"teamb/subgroup/repoa"},
+			"project_path": "teamb/subgroup/repoa",
 		},
 		"teamb-teamb/subgroup/repoa-test": map[string]any{
 			"project_path":  []any{"teamb/subgroup/repoa"},

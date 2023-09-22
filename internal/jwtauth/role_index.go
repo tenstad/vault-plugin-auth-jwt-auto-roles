@@ -57,6 +57,8 @@ func parseBoundClaims(bc any) (map[string][]string, error) {
 
 func parseBoundClaimValues(vs any) ([]string, error) {
 	switch vs := vs.(type) {
+	case string:
+		return []string{vs}, nil
 	case []any:
 		var values []string
 		for _, v := range vs {

@@ -22,7 +22,7 @@ jwt auth backends's roles to quickly deduce which roles an incoming jwt unlocks.
 
 type multiroleJWTConfig struct {
 	// Roles map role names to bound claims. Bound claims must be of type
-	// map[string][]string.
+	// map[string]([]string | string).
 	Roles       map[string]any `json:"roles"`
 	JWTAuthHost string         `json:"jwt_auth_host"`
 	JWTAuthPath string         `json:"jwt_auth_path"`

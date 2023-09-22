@@ -104,7 +104,7 @@ func testConfig() map[string]any {
 				"project_path": []any{"foo", "bar"},
 			},
 			"bar": map[string]any{
-				"namespace_path": []any{"c"},
+				"namespace_path": "c",
 				"ref":            []any{"master", "main"},
 			},
 		},
