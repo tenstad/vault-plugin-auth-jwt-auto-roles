@@ -7,8 +7,9 @@ OIDC) token, and grant access to the union of matching roles' policies.
 plugin](https://github.com/hashicorp/vault-plugin-auth-jwt) requires a role-name
 to be specified during authentication. When authenticated, access is only
 granted based on the policies of that single role. Even though the JWT satisfies
-multiple roles' bound claims. Repeated logins with different role names are thus
-sometimes required, resulting in access being split over multiple tokens.
+multiple roles' bound claims. Thus, multiple logins with different role names
+are required when policies are split across multiple roles, resulting in
+multiple tokens which cannot be used interchangeably.
 
 **Solution**: The _jwt-auto-roles_ plugin automatically determines which roles'
 bound claims a JWT matches. It grants access to the union of all the matching
