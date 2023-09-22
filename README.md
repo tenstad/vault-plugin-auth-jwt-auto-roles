@@ -24,10 +24,47 @@ claims, tries to login to a mount of the builtin _jwt_ plugin for each role, and
 grants access to the union of policies returned by the builtin _jwt_ plugin
 mount.
 
-## Configuration
+## Usage
+
+Download and unzip a
+[release](https://github.com/statnett/vault-plugin-auth-jwt-auto-roles/releases)
+of the plugin and place it in the [plugin
+directory](https://developer.hashicorp.com/vault/docs/configuration#plugin_directory).
+
+[Register](https://developer.hashicorp.com/vault/docs/commands/plugin/register)
+the plugin:
+
+`vault plugin register -sha256=<binary sha> auth vault-plugin-auth-jwt-auto-roles`
+
+Enable the plugin at a specific mount path (e.g. `jwt-auto-roles`):
+
+`vault auth enable -path=jwt-auto-roles vault-plugin-auth-jwt-auto-roles`
 
 For the plugin to be able to determine matching roles, it must be configured
-with all the roles of a builtin _jwt_ plugin mount, and their bound claims.
+with the host name and mount point of a builtin _jwt_ plugin mount, along with
+all its roles and their bound claims:
+
+`vault write auth/jwt-auto-roles/config @config.json`
+
+```json
+// config.json
+{
+  "jwt_auth_host": "https://vault.org.com",
+  "jwt_auth_path": "jwt",
+  "roles": {
+    "role-a": {
+      "project_path": ["foo/bar"]
+    },
+    "role-b": {
+      "branch": ["main", "master"]
+    }
+  }
+}
+```
+
+Then login as with the builtin _jwt_ auth, although without the role parameter:
+
+`vault write auth/jwt-auto-roles/login jwt=$jwt`
 
 ## Future work
 
