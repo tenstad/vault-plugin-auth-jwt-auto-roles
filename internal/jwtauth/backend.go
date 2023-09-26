@@ -118,9 +118,3 @@ func (c *vaultClient) policies(ctx context.Context, request schema.JwtLoginReque
 	}
 	return r.Auth.Policies, nil
 }
-
-type mockPolicyFetcher func(context.Context, schema.JwtLoginRequest) ([]string, error)
-
-func (c mockPolicyFetcher) policies(ctx context.Context, request schema.JwtLoginRequest) ([]string, error) {
-	return c(ctx, request)
-}

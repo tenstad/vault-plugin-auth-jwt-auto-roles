@@ -45,7 +45,7 @@ func TestLogin_Write(t *testing.T) {
 		t.Fatalf("err:%s resp:%#v\n", err, resp)
 	}
 
-	var policyClient mockPolicyFetcher = func(_ context.Context, request schema.JwtLoginRequest) ([]string, error) {
+	var policyClient fakePolicyFetcher = func(_ context.Context, request schema.JwtLoginRequest) ([]string, error) {
 		return []string{request.Role + "-policy"}, nil
 	}
 	backend.policyClient = policyClient
@@ -103,4 +103,10 @@ func TestLogin_Write(t *testing.T) {
 			t.Fatalf("Test case %v failed with diff:\n%s", i, diff)
 		}
 	}
+}
+
+type fakePolicyFetcher func(context.Context, schema.JwtLoginRequest) ([]string, error)
+
+func (c fakePolicyFetcher) policies(ctx context.Context, request schema.JwtLoginRequest) ([]string, error) {
+	return c(ctx, request)
 }
