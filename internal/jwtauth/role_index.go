@@ -10,7 +10,7 @@ type roleIndex struct {
 	jwtMatcher *node
 }
 
-func createRoleIndex(config *multiroleJWTConfig) (*roleIndex, error) {
+func createRoleIndex(config *jwtAutoRolesConfig) (*roleIndex, error) {
 	roles, err := parseRoles(config)
 	if err != nil {
 		return nil, err
@@ -26,7 +26,7 @@ func (ri *roleIndex) claimsRoles(claims map[string]any) []string {
 	return ri.jwtMatcher.findBoundRoleNames(claims)
 }
 
-func parseRoles(config *multiroleJWTConfig) (roles, error) {
+func parseRoles(config *jwtAutoRolesConfig) (roles, error) {
 	roles := make(roles)
 	for roleName, bc := range config.Roles {
 		boundClaims, err := parseBoundClaims(bc)

@@ -77,7 +77,7 @@ func TestRoleIndexer(t *testing.T) {
 		},
 	}
 
-	config := multiroleJWTConfig{
+	config := jwtAutoRolesConfig{
 		Roles: roles,
 	}
 

@@ -16,7 +16,8 @@ import (
 
 const (
 	backendHelp = `
-The multirole JWT backend plugin allows authentication with multiple roles using JWTs (including OIDC).
+The JWT auto roles auth plugin allows automatic authentication with all roles
+matching a JWT (or OIDC) token.
 `
 	vaultClientTimeoutSeconds = 5
 )
@@ -29,11 +30,11 @@ func Factory(ctx context.Context, c *logical.BackendConfig) (logical.Backend, er
 	return b, nil
 }
 
-type multiroleJWTAuthBackend struct {
+type jwtAutoRolesAuthBackend struct {
 	*framework.Backend
 
 	l            sync.RWMutex
-	cachedConfig *multiroleJWTConfig
+	cachedConfig *jwtAutoRolesConfig
 	roleIndex    *roleIndex
 	policyClient policyFetcher
 }
@@ -42,8 +43,8 @@ type policyFetcher interface {
 	policies(ctx context.Context, request schema.JwtLoginRequest) ([]string, error)
 }
 
-func backend(_ *logical.BackendConfig) *multiroleJWTAuthBackend {
-	var backend multiroleJWTAuthBackend
+func backend(_ *logical.BackendConfig) *jwtAutoRolesAuthBackend {
+	var backend jwtAutoRolesAuthBackend
 	backend.Backend = &framework.Backend{
 		BackendType: logical.TypeCredential,
 		Help:        backendHelp,
@@ -59,14 +60,14 @@ func backend(_ *logical.BackendConfig) *multiroleJWTAuthBackend {
 	return &backend
 }
 
-func (b *multiroleJWTAuthBackend) reset() {
+func (b *jwtAutoRolesAuthBackend) reset() {
 	b.l.Lock()
 	defer b.l.Unlock()
 	b.cachedConfig = nil
 	b.roleIndex = nil
 }
 
-func (b *multiroleJWTAuthBackend) getRoleIndex(config *multiroleJWTConfig) (*roleIndex, error) {
+func (b *jwtAutoRolesAuthBackend) getRoleIndex(config *jwtAutoRolesConfig) (*roleIndex, error) {
 	b.l.Lock()
 	defer b.l.Unlock()
 
@@ -83,7 +84,7 @@ func (b *multiroleJWTAuthBackend) getRoleIndex(config *multiroleJWTConfig) (*rol
 	return index, nil
 }
 
-func (b *multiroleJWTAuthBackend) getPolicyClient(config *multiroleJWTConfig) (policyFetcher, error) {
+func (b *jwtAutoRolesAuthBackend) getPolicyClient(config *jwtAutoRolesConfig) (policyFetcher, error) {
 	b.l.Lock()
 	defer b.l.Unlock()
 

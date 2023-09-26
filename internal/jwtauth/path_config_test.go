@@ -31,7 +31,7 @@ func TestConfig_Write(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	expected := &multiroleJWTConfig{
+	expected := &jwtAutoRolesConfig{
 		Roles:       configData["roles"].(map[string]any),
 		JWTAuthHost: "http://localhost:8200",
 		JWTAuthPath: "foo/jwt",

@@ -12,15 +12,15 @@ const (
 	configPath string = "config"
 
 	pathConfigHelpSyn = `
-Configures the multirole JWT authentication backend.
+Configures the JWT auto roles authentication backend.
 `
 	pathConfigHelpDesc = `
-The multirole JWT authentication backend uses configured bound claims of another
+The JWT auto roles authentication backend uses configured bound claims of another
 jwt auth backends's roles to quickly deduce which roles an incoming jwt unlocks.
 `
 )
 
-type multiroleJWTConfig struct {
+type jwtAutoRolesConfig struct {
 	// Roles map role names to bound claims. Bound claims must be of type
 	// map[string][]string.
 	Roles       map[string]any `json:"roles"`
@@ -28,7 +28,7 @@ type multiroleJWTConfig struct {
 	JWTAuthPath string         `json:"jwt_auth_path"`
 }
 
-func pathConfig(backend *multiroleJWTAuthBackend) *framework.Path {
+func pathConfig(backend *jwtAutoRolesAuthBackend) *framework.Path {
 	return &framework.Path{
 		Pattern: `config`,
 		Fields: map[string]*framework.FieldSchema{
@@ -55,15 +55,15 @@ func pathConfig(backend *multiroleJWTAuthBackend) *framework.Path {
 		Operations: map[logical.Operation]framework.OperationHandler{
 			logical.ReadOperation: &framework.PathOperation{
 				Callback: backend.pathConfigRead,
-				Summary:  "Read the current multirole JWT authentication backend configuration.",
+				Summary:  "Read the current JWT auto roles authentication backend configuration.",
 			},
 			logical.UpdateOperation: &framework.PathOperation{
 				Callback: backend.pathConfigWrite,
-				Summary:  "Configure the multirole JWT authentication backend.",
+				Summary:  "Configure the JWT auto roles authentication backend.",
 			},
 			logical.DeleteOperation: &framework.PathOperation{
 				Callback: backend.pathConfigDelete,
-				Summary:  "Delete the multirole JWT authentication backend config.",
+				Summary:  "Delete the JWT auto roles authentication backend config.",
 			},
 		},
 
@@ -72,7 +72,7 @@ func pathConfig(backend *multiroleJWTAuthBackend) *framework.Path {
 	}
 }
 
-func (b *multiroleJWTAuthBackend) config(ctx context.Context, storage logical.Storage) (*multiroleJWTConfig, error) {
+func (b *jwtAutoRolesAuthBackend) config(ctx context.Context, storage logical.Storage) (*jwtAutoRolesConfig, error) {
 	if b.cachedConfig != nil {
 		return b.cachedConfig, nil
 	}
@@ -88,7 +88,7 @@ func (b *multiroleJWTAuthBackend) config(ctx context.Context, storage logical.St
 		return nil, nil
 	}
 
-	config := &multiroleJWTConfig{}
+	config := &jwtAutoRolesConfig{}
 	if err := entry.DecodeJSON(config); err != nil {
 		return nil, err
 	}
@@ -97,10 +97,10 @@ func (b *multiroleJWTAuthBackend) config(ctx context.Context, storage logical.St
 	return config, nil
 }
 
-func (b *multiroleJWTAuthBackend) pathConfigWrite(
+func (b *jwtAutoRolesAuthBackend) pathConfigWrite(
 	ctx context.Context, req *logical.Request, d *framework.FieldData,
 ) (*logical.Response, error) {
-	config := multiroleJWTConfig{
+	config := jwtAutoRolesConfig{
 		Roles:       d.Get("roles").(map[string]any),
 		JWTAuthHost: d.Get("jwt_auth_host").(string),
 		JWTAuthPath: d.Get("jwt_auth_path").(string),
@@ -123,7 +123,7 @@ func (b *multiroleJWTAuthBackend) pathConfigWrite(
 	return nil, nil
 }
 
-func (b *multiroleJWTAuthBackend) pathConfigRead(
+func (b *jwtAutoRolesAuthBackend) pathConfigRead(
 	ctx context.Context, req *logical.Request, d *framework.FieldData,
 ) (*logical.Response, error) {
 	config, err := b.config(ctx, req.Storage)
@@ -143,7 +143,7 @@ func (b *multiroleJWTAuthBackend) pathConfigRead(
 	}, nil
 }
 
-func (b *multiroleJWTAuthBackend) pathConfigDelete(
+func (b *jwtAutoRolesAuthBackend) pathConfigDelete(
 	ctx context.Context, req *logical.Request, d *framework.FieldData,
 ) (*logical.Response, error) {
 	err := req.Storage.Delete(ctx, configPath)
