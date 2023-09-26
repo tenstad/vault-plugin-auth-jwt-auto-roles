@@ -16,8 +16,8 @@ import (
 
 const (
 	backendHelp = `
-The JWT auto roles auth plugin allows authentication with multiple auto-detected
-roles using JWTs (including OIDC).
+The JWT auto roles auth plugin allows automatic authentication with all roles
+matching a JWT (or OIDC) token.
 `
 	vaultClientTimeoutSeconds = 5
 )
