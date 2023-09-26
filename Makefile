@@ -25,11 +25,11 @@ start: build
 
 .PHONY: enable
 enable:
-	vault auth enable -path=multirole-jwt vault-plugin-auth-jwt-auto-roles
+	vault auth enable -path=jwt-auto-roles vault-plugin-auth-jwt-auto-roles
 
 .PHONY: disable
 disable:
-	vault auth disable multirole-jwt
+	vault auth disable jwt-auto-roles
 	vault plugin deregister auth vault-plugin-auth-jwt-auto-roles
 
 auth=jwt
@@ -42,7 +42,7 @@ config:
 
 .PHONY: configure
 configure:
-	vault write auth/multirole-jwt/config @config.json
+	vault write auth/jwt-auto-roles/config @config.json
 
 .PHONY: clean
 clean:

@@ -20,7 +20,7 @@ Authenticates JWTs.
 `
 )
 
-func pathLogin(backend *multiroleJWTAuthBackend) *framework.Path {
+func pathLogin(backend *jwtAutoRolesAuthBackend) *framework.Path {
 	return &framework.Path{
 		Pattern: "login",
 		Fields: map[string]*framework.FieldSchema{
@@ -40,7 +40,7 @@ func pathLogin(backend *multiroleJWTAuthBackend) *framework.Path {
 	}
 }
 
-func (b *multiroleJWTAuthBackend) pathLogin(
+func (b *jwtAutoRolesAuthBackend) pathLogin(
 	ctx context.Context, req *logical.Request, d *framework.FieldData,
 ) (*logical.Response, error) {
 	token := d.Get("jwt").(string)
@@ -82,8 +82,8 @@ func (b *multiroleJWTAuthBackend) pathLogin(
 
 // policies use the token to log in to the configured auth backend for each
 // role, and returns the aggregated policies of successful logins.
-func (b *multiroleJWTAuthBackend) policies(
-	ctx context.Context, config *multiroleJWTConfig, roles []string, token string,
+func (b *jwtAutoRolesAuthBackend) policies(
+	ctx context.Context, config *jwtAutoRolesConfig, roles []string, token string,
 ) ([]string, error) {
 	client, err := b.getPolicyClient(config)
 	if err != nil {

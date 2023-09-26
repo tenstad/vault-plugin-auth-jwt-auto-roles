@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/vault/sdk/logical"
 )
 
-func createTestBackend(t *testing.T) (*multiroleJWTAuthBackend, logical.Storage) {
+func createTestBackend(t *testing.T) (*jwtAutoRolesAuthBackend, logical.Storage) {
 	config := &logical.BackendConfig{
 		Logger: logging.NewVaultLogger(log.Trace),
 
@@ -26,9 +26,9 @@ func createTestBackend(t *testing.T) (*multiroleJWTAuthBackend, logical.Storage)
 		t.Fatalf("unable to create backend: %v", err)
 	}
 
-	backend, ok := logicalBackend.(*multiroleJWTAuthBackend)
+	backend, ok := logicalBackend.(*jwtAutoRolesAuthBackend)
 	if !ok {
-		t.Fatal("backend is not a multiroleJWTAuthBackend")
+		t.Fatal("backend is not a jwtAutoRolesAuthBackend")
 	}
 
 	return backend, config.StorageView
