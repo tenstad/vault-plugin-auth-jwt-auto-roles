@@ -61,6 +61,10 @@ func pathConfig(backend *multiroleJWTAuthBackend) *framework.Path {
 				Callback: backend.pathConfigWrite,
 				Summary:  "Configure the multirole JWT authentication backend.",
 			},
+			logical.DeleteOperation: &framework.PathOperation{
+				Callback: backend.pathConfigDelete,
+				Summary:  "Delete the multirole JWT authentication backend config.",
+			},
 		},
 
 		HelpSynopsis:    pathConfigHelpSyn,
@@ -137,4 +141,15 @@ func (b *multiroleJWTAuthBackend) pathConfigRead(
 			"jwt_auth_path": config.JWTAuthPath,
 		},
 	}, nil
+}
+
+func (b *multiroleJWTAuthBackend) pathConfigDelete(
+	ctx context.Context, req *logical.Request, d *framework.FieldData,
+) (*logical.Response, error) {
+	err := req.Storage.Delete(ctx, configPath)
+	if err == nil {
+		b.reset()
+	}
+
+	return nil, err
 }
