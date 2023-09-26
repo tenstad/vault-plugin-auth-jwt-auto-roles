@@ -79,6 +79,52 @@ func TestConfig_Read(t *testing.T) {
 	}
 }
 
+func TestConfig_Delete(t *testing.T) {
+	t.Parallel()
+	backend, storage := createTestBackend(t)
+
+	configData := testConfig()
+	req := &logical.Request{
+		Operation: logical.UpdateOperation,
+		Path:      configPath,
+		Storage:   storage,
+		Data:      configData,
+	}
+
+	resp, err := backend.HandleRequest(context.Background(), req)
+	if err != nil || (resp != nil && resp.IsError()) {
+		t.Fatalf("err:%s resp:%#v\n", err, resp)
+	}
+
+	conf, err := backend.(*multiroleJWTAuthBackend).config(context.Background(), storage)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if conf == nil {
+		t.Fatal("expected config to exist after write")
+	}
+
+	req = &logical.Request{
+		Operation: logical.DeleteOperation,
+		Path:      configPath,
+		Storage:   storage,
+		Data:      nil,
+	}
+
+	resp, err = backend.HandleRequest(context.Background(), req)
+	if err != nil || (resp != nil && resp.IsError()) {
+		t.Fatalf("err:%s resp:%#v\n", err, resp)
+	}
+
+	conf, err = backend.(*multiroleJWTAuthBackend).config(context.Background(), storage)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if conf != nil {
+		t.Fatal("expected config to not exist after delete")
+	}
+}
+
 func createTestBackend(t *testing.T) (logical.Backend, logical.Storage) {
 	config := &logical.BackendConfig{
 		Logger: logging.NewVaultLogger(log.Trace),
