@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/vault-client-go"
+	"github.com/hashicorp/vault-client-go/schema"
 	"github.com/hashicorp/vault/sdk/framework"
 	"github.com/hashicorp/vault/sdk/logical"
 
@@ -34,7 +35,11 @@ type multiroleJWTAuthBackend struct {
 	l            sync.RWMutex
 	cachedConfig *multiroleJWTConfig
 	roleIndex    *roleIndex
-	client       *vault.Client
+	policyClient policyFetcher
+}
+
+type policyFetcher interface {
+	policies(ctx context.Context, request schema.JwtLoginRequest) ([]string, error)
 }
 
 func backend(_ *logical.BackendConfig) *multiroleJWTAuthBackend {
@@ -78,12 +83,12 @@ func (b *multiroleJWTAuthBackend) getRoleIndex(config *multiroleJWTConfig) (*rol
 	return index, nil
 }
 
-func (b *multiroleJWTAuthBackend) getClient(config *multiroleJWTConfig) (*vault.Client, error) {
+func (b *multiroleJWTAuthBackend) getPolicyClient(config *multiroleJWTConfig) (policyFetcher, error) {
 	b.l.Lock()
 	defer b.l.Unlock()
 
-	if b.client != nil {
-		return b.client, nil
+	if b.policyClient != nil {
+		return b.policyClient, nil
 	}
 
 	client, err := vault.New(
@@ -94,6 +99,22 @@ func (b *multiroleJWTAuthBackend) getClient(config *multiroleJWTConfig) (*vault.
 		return nil, fmt.Errorf("failed to create vault client: %w", err)
 	}
 
-	b.client = client
-	return client, nil
+	b.policyClient = &vaultClient{
+		Client:    client,
+		mountPath: config.JWTAuthPath,
+	}
+	return b.policyClient, nil
+}
+
+type vaultClient struct {
+	*vault.Client
+	mountPath string
+}
+
+func (c *vaultClient) policies(ctx context.Context, request schema.JwtLoginRequest) ([]string, error) {
+	r, err := c.Client.Auth.JwtLogin(ctx, request, vault.WithMountPath(c.mountPath))
+	if err != nil {
+		return nil, fmt.Errorf("vault error: %w", err)
+	}
+	return r.Auth.Policies, nil
 }
