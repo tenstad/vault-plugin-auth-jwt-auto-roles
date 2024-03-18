@@ -54,7 +54,7 @@ func pathConfig(backend *jwtAutoRolesAuthBackend) *framework.Path {
 			"id_claim_key": {
 				Type: framework.TypeString,
 				DisplayAttrs: &framework.DisplayAttributes{
-					Name: "Key in JWT claims to use for EntityID",
+					Name: "Key in JWT claims to use for auth alias id",
 				},
 			},
 		},
