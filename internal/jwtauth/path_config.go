@@ -26,6 +26,7 @@ type jwtAutoRolesConfig struct {
 	Roles       map[string]any `json:"roles"`
 	JWTAuthHost string         `json:"jwt_auth_host"`
 	JWTAuthPath string         `json:"jwt_auth_path"`
+	IDClaimKey  string         `json:"id_claim_key"`
 }
 
 func pathConfig(backend *jwtAutoRolesAuthBackend) *framework.Path {
@@ -48,6 +49,12 @@ func pathConfig(backend *jwtAutoRolesAuthBackend) *framework.Path {
 				Type: framework.TypeString,
 				DisplayAttrs: &framework.DisplayAttributes{
 					Name: "Path of the default jwt auth plugin (without 'auth' or 'login')",
+				},
+			},
+			"id_claim_key": {
+				Type: framework.TypeString,
+				DisplayAttrs: &framework.DisplayAttributes{
+					Name: "Key in JWT claims to use for EntityID",
 				},
 			},
 		},
@@ -104,6 +111,7 @@ func (b *jwtAutoRolesAuthBackend) pathConfigWrite(
 		Roles:       d.Get("roles").(map[string]any),
 		JWTAuthHost: d.Get("jwt_auth_host").(string),
 		JWTAuthPath: d.Get("jwt_auth_path").(string),
+		IDClaimKey:  d.Get("id_claim_key").(string),
 	}
 
 	_, err := parseRoles(&config)
@@ -139,6 +147,7 @@ func (b *jwtAutoRolesAuthBackend) pathConfigRead(
 			"roles":         config.Roles,
 			"jwt_auth_host": config.JWTAuthHost,
 			"jwt_auth_path": config.JWTAuthPath,
+			"id_claim_key":  config.IDClaimKey,
 		},
 	}, nil
 }

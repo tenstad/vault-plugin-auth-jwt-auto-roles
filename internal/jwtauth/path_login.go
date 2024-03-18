@@ -66,6 +66,8 @@ func (b *jwtAutoRolesAuthBackend) pathLogin(
 		return nil, fmt.Errorf("failed to parse token: %w", err)
 	}
 
+	entityID, _ := claims[config.IDClaimKey].(string)
+
 	roles := roleIndex.claimsRoles(claims)
 	policies, err := b.policies(ctx, config, roles, token)
 	if err != nil {
@@ -74,6 +76,7 @@ func (b *jwtAutoRolesAuthBackend) pathLogin(
 
 	return &logical.Response{
 		Auth: &logical.Auth{
+			EntityID: entityID,
 			Period:   time.Hour,
 			Policies: policies,
 		},
