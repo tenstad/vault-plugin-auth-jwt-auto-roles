@@ -67,7 +67,7 @@ func (b *jwtAutoRolesAuthBackend) pathLogin(
 	}
 
 	var alias *logical.Alias
-	if id, ok := claims[config.IDClaimKey].(string); ok {
+	if id, ok := claims[config.UserClaim].(string); ok {
 		alias = &logical.Alias{
 			Name: id,
 		}

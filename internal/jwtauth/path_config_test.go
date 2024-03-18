@@ -35,7 +35,7 @@ func TestConfig_Write(t *testing.T) {
 		Roles:       configData["roles"].(map[string]any),
 		JWTAuthHost: "http://localhost:8200",
 		JWTAuthPath: "foo/jwt",
-		IDClaimKey:  "user_email",
+		UserClaim:   "user_email",
 	}
 
 	if !reflect.DeepEqual(expected, conf) {
