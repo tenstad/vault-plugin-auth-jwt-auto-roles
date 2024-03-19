@@ -37,7 +37,7 @@ config:
 	for role in $(shell vault list -format=json auth/$(auth)/role | jq -r .[]); \
 	do vault read -format json "auth/$(auth)/role/$${role}" | jq "{\"$${role}\":.data.bound_claims}"; done \
 	| jq -s add \
-	| jq '{jwt_auth_host:"${VAULT_ADDR}",jwt_auth_path:"$(auth)",roles:.}' \
+	| jq '{jwt_auth_host:"${VAULT_ADDR}",jwt_auth_path:"$(auth)",user_claim:"user_email",roles:.}' \
 	> config.json
 
 .PHONY: configure
