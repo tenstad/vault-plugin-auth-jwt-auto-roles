@@ -51,5 +51,6 @@ func testConfig() map[string]any {
 		"jwt_auth_host": "http://localhost:8200",
 		"jwt_auth_path": "foo/jwt",
 		"user_claim":    "user_email",
+		"vault_token":   "secret",
 	}
 }
