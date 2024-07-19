@@ -122,21 +122,26 @@ func (b *jwtAutoRolesAuthBackend) pathConfigWrite(
 		VaultToken:  d.Get("vault_token").(string),
 	}
 
-	_, err := parseRoles(&config)
-	if err != nil {
+	if _, err := parseRoles(&config); err != nil {
 		return nil, fmt.Errorf("failed to parse roles: %w", err)
 	}
-
-	entry, err := logical.StorageEntryJSON(configPath, config)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create storage: %w", err)
-	}
-	if err := req.Storage.Put(ctx, entry); err != nil {
-		return nil, fmt.Errorf("failed to read storage: %w", err)
+	if err := writeConfig(ctx, req.Storage, config); err != nil {
+		return nil, err
 	}
 
 	b.reset()
 	return nil, nil
+}
+
+func writeConfig(ctx context.Context, storage logical.Storage, config jwtAutoRolesConfig) error {
+	entry, err := logical.StorageEntryJSON(configPath, config)
+	if err != nil {
+		return fmt.Errorf("failed to create storage: %w", err)
+	}
+	if err := storage.Put(ctx, entry); err != nil {
+		return fmt.Errorf("failed to write storage: %w", err)
+	}
+	return nil
 }
 
 func (b *jwtAutoRolesAuthBackend) pathConfigRead(
