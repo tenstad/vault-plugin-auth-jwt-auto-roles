@@ -122,6 +122,12 @@ func (b *jwtAutoRolesAuthBackend) pathConfigWrite(
 		VaultToken:  d.Get("vault_token").(string),
 	}
 
+	if config.VaultToken != "" {
+		if err := b.fetchRolesInto(ctx, &config); err != nil {
+			return nil, err
+		}
+	}
+
 	if _, err := parseRoles(&config); err != nil {
 		return nil, fmt.Errorf("failed to parse roles: %w", err)
 	}

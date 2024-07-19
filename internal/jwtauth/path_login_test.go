@@ -45,10 +45,15 @@ func TestLogin_Write(t *testing.T) {
 		t.Fatalf("err:%s resp:%#v\n", err, resp)
 	}
 
-	var policyClient fakePolicyFetcher = func(_ context.Context, request schema.JwtLoginRequest) ([]string, error) {
-		return []string{request.Role + "-policy"}, nil
+	backend.vaultClient = fakeVaultFetcher{
+		policiesFn: func(_ context.Context, request schema.JwtLoginRequest) ([]string, error) {
+			return []string{request.Role + "-policy"}, nil
+		},
+		rolesFn: func(_ context.Context) (map[string]any, error) {
+			roles := testConfig()["roles"].(map[string]any)
+			return roles, nil
+		},
 	}
-	backend.policyClient = policyClient
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
@@ -105,8 +110,15 @@ func TestLogin_Write(t *testing.T) {
 	}
 }
 
-type fakePolicyFetcher func(context.Context, schema.JwtLoginRequest) ([]string, error)
+type fakeVaultFetcher struct {
+	policiesFn func(context.Context, schema.JwtLoginRequest) ([]string, error)
+	rolesFn    func(context.Context) (map[string]any, error)
+}
 
-func (c fakePolicyFetcher) policies(ctx context.Context, request schema.JwtLoginRequest) ([]string, error) {
-	return c(ctx, request)
+func (f fakeVaultFetcher) policies(ctx context.Context, request schema.JwtLoginRequest) ([]string, error) {
+	return f.policiesFn(ctx, request)
+}
+
+func (f fakeVaultFetcher) roles(ctx context.Context) (map[string]any, error) {
+	return f.rolesFn(ctx)
 }

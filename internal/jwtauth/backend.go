@@ -36,11 +36,12 @@ type jwtAutoRolesAuthBackend struct {
 	l            sync.RWMutex
 	cachedConfig *jwtAutoRolesConfig
 	roleIndex    *roleIndex
-	policyClient policyFetcher
+	vaultClient  vaultFetcher
 }
 
-type policyFetcher interface {
+type vaultFetcher interface {
 	policies(ctx context.Context, request schema.JwtLoginRequest) ([]string, error)
+	roles(ctx context.Context) (map[string]any, error)
 }
 
 func backend(_ *logical.BackendConfig) *jwtAutoRolesAuthBackend {
@@ -84,12 +85,12 @@ func (b *jwtAutoRolesAuthBackend) getRoleIndex(config *jwtAutoRolesConfig) (*rol
 	return index, nil
 }
 
-func (b *jwtAutoRolesAuthBackend) getPolicyClient(config *jwtAutoRolesConfig) (policyFetcher, error) {
+func (b *jwtAutoRolesAuthBackend) getVaultClient(config *jwtAutoRolesConfig) (vaultFetcher, error) {
 	b.l.Lock()
 	defer b.l.Unlock()
 
-	if b.policyClient != nil {
-		return b.policyClient, nil
+	if b.vaultClient != nil {
+		return b.vaultClient, nil
 	}
 
 	client, err := vault.New(
@@ -100,16 +101,33 @@ func (b *jwtAutoRolesAuthBackend) getPolicyClient(config *jwtAutoRolesConfig) (p
 		return nil, fmt.Errorf("failed to create vault client: %w", err)
 	}
 
-	b.policyClient = &vaultClient{
+	b.vaultClient = &vaultClient{
 		Client:    client,
 		mountPath: config.JWTAuthPath,
+		token:     config.VaultToken,
 	}
-	return b.policyClient, nil
+	return b.vaultClient, nil
+}
+
+func (b *jwtAutoRolesAuthBackend) fetchRolesInto(ctx context.Context, config *jwtAutoRolesConfig) error {
+	client, err := b.getVaultClient(config)
+	if err != nil {
+		return err
+	}
+
+	roles, err := client.roles(ctx)
+	if err != nil {
+		return err
+	}
+
+	config.Roles = roles
+	return nil
 }
 
 type vaultClient struct {
 	*vault.Client
 	mountPath string
+	token     string
 }
 
 func (c *vaultClient) policies(ctx context.Context, request schema.JwtLoginRequest) ([]string, error) {
@@ -118,4 +136,8 @@ func (c *vaultClient) policies(ctx context.Context, request schema.JwtLoginReque
 		return nil, fmt.Errorf("vault error: %w", err)
 	}
 	return r.Auth.Policies, nil
+}
+
+func (c *vaultClient) roles(_ context.Context) (map[string]any, error) {
+	return nil, nil
 }
