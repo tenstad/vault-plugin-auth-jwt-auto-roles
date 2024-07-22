@@ -130,6 +130,7 @@ func (b *jwtAutoRolesAuthBackend) pathConfigWrite(
 	if _, err := parseRoles(&config); err != nil {
 		return nil, fmt.Errorf("failed to parse roles: %w", err)
 	}
+
 	if err := writeConfig(ctx, req.Storage, &config); err != nil {
 		return nil, err
 	}
