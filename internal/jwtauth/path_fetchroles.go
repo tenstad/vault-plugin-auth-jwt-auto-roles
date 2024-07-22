@@ -72,6 +72,5 @@ func (b *jwtAutoRolesAuthBackend) pathFetchRolesWrite(
 	}
 
 	b.reset()
-
 	return nil, nil
 }

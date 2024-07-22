@@ -171,14 +171,14 @@ func (c *vaultClient) roles(ctx context.Context, vaultToken string) (map[string]
 		return nil, err
 	}
 
-	roleClaims := make(map[string]any, len(roles.Data.Keys))
+	roleConfig := make(map[string]any, len(roles.Data.Keys))
 	for _, name := range roles.Data.Keys {
 		role, err := c.Client.Auth.JwtReadRole(ctx, name, opts...)
 		if err != nil {
 			return nil, err
 		}
-		roleClaims[name] = role.Data["bound_claims"]
+		roleConfig[name] = role.Data["bound_claims"]
 	}
 
-	return roleClaims, nil
+	return roleConfig, nil
 }
