@@ -84,7 +84,7 @@ func (b *jwtAutoRolesAuthBackend) getRoleIndex(config *jwtAutoRolesConfig) (*rol
 	return index, nil
 }
 
-func (b *jwtAutoRolesAuthBackend) getPolicyClient(config *jwtAutoRolesConfig) (policyFetcher, error) {
+func (b *jwtAutoRolesAuthBackend) policyFetcher(config *jwtAutoRolesConfig) (policyFetcher, error) {
 	b.l.Lock()
 	defer b.l.Unlock()
 
