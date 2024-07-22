@@ -37,10 +37,15 @@ type jwtAutoRolesAuthBackend struct {
 	cachedConfig *jwtAutoRolesConfig
 	roleIndex    *roleIndex
 	policyClient policyFetcher
+	roleClient   roleFetcher
 }
 
 type policyFetcher interface {
 	policies(ctx context.Context, request schema.JwtLoginRequest) ([]string, error)
+}
+
+type roleFetcher interface {
+	roles(ctx context.Context, vaultToken string) (map[string]any, error)
 }
 
 func backend(_ *logical.BackendConfig) *jwtAutoRolesAuthBackend {
@@ -54,6 +59,7 @@ func backend(_ *logical.BackendConfig) *jwtAutoRolesAuthBackend {
 		Paths: []*framework.Path{
 			pathLogin(&backend),
 			pathConfig(&backend),
+			pathConfigRolesRefresh(&backend),
 		},
 		RunningVersion: version.Version,
 	}
@@ -107,6 +113,44 @@ func (b *jwtAutoRolesAuthBackend) policyFetcher(config *jwtAutoRolesConfig) (pol
 	return b.policyClient, nil
 }
 
+func (b *jwtAutoRolesAuthBackend) roleFetcher(config *jwtAutoRolesConfig) (roleFetcher, error) {
+	b.l.Lock()
+	defer b.l.Unlock()
+
+	if b.roleClient != nil {
+		return b.roleClient, nil
+	}
+
+	client, err := vault.New(
+		vault.WithAddress(config.JWTAuthHost),
+		vault.WithRequestTimeout(vaultClientTimeoutSeconds*time.Second),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create vault client: %w", err)
+	}
+
+	b.roleClient = &vaultClient{
+		Client:    client,
+		mountPath: config.JWTAuthPath,
+	}
+	return b.roleClient, nil
+}
+
+func (b *jwtAutoRolesAuthBackend) fetchRolesInto(ctx context.Context, config *jwtAutoRolesConfig, vaultToken string) error {
+	client, err := b.roleFetcher(config)
+	if err != nil {
+		return err
+	}
+
+	roles, err := client.roles(ctx, vaultToken)
+	if err != nil {
+		return err
+	}
+
+	config.Roles = roles
+	return nil
+}
+
 type vaultClient struct {
 	*vault.Client
 	mountPath string
@@ -118,4 +162,23 @@ func (c *vaultClient) policies(ctx context.Context, request schema.JwtLoginReque
 		return nil, fmt.Errorf("vault error: %w", err)
 	}
 	return r.Auth.Policies, nil
+}
+
+func (c *vaultClient) roles(ctx context.Context, vaultToken string) (map[string]any, error) {
+	opts := []vault.RequestOption{vault.WithMountPath(c.mountPath), vault.WithToken(vaultToken)}
+	roles, err := c.Client.Auth.JwtListRoles(ctx, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	roleConfig := make(map[string]any, len(roles.Data.Keys))
+	for _, name := range roles.Data.Keys {
+		role, err := c.Client.Auth.JwtReadRole(ctx, name, opts...)
+		if err != nil {
+			return nil, err
+		}
+		roleConfig[name] = role.Data["bound_claims"]
+	}
+
+	return roleConfig, nil
 }

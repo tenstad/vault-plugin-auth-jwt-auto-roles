@@ -32,18 +32,19 @@ disable:
 	vault auth disable jwt-auto-roles
 	vault plugin deregister auth vault-plugin-auth-jwt-auto-roles
 
-auth=jwt
-config:
-	for role in $(shell vault list -format=json auth/$(auth)/role | jq -r .[]); \
-	do vault read -format json "auth/$(auth)/role/$${role}" | jq "{\"$${role}\":.data.bound_claims}"; done \
-	| jq -s add \
-	| jq '{jwt_auth_host:"${VAULT_ADDR}",jwt_auth_path:"$(auth)",user_claim:"user_email",roles:.}' \
-	> config.json
-
 .PHONY: configure
 configure:
 	vault write auth/jwt-auto-roles/config @config.json
 
+.PHONY: readconfig
+readconfig:
+	vault read --format=json auth/jwt-auto-roles/config
+
+.PHONY: refreshroles
+token=""
+refreshroles:
+	vault write auth/jwt-auto-roles/config/roles/refresh vault_token="$(token)"
+
 .PHONY: clean
 clean:
-	rm -rf ./bin ./build ./dist config.json
+	rm -rf ./bin ./build ./dist

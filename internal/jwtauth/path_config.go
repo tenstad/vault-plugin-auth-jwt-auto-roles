@@ -57,6 +57,12 @@ func pathConfig(backend *jwtAutoRolesAuthBackend) *framework.Path {
 					Name: "Claim in JWT claims to use for entity alias name",
 				},
 			},
+			"vault_token": {
+				Type: framework.TypeString,
+				DisplayAttrs: &framework.DisplayAttributes{
+					Name: "Token to use to fetch roles instead of including them in 'roles'",
+				},
+			},
 		},
 
 		Operations: map[logical.Operation]framework.OperationHandler{
@@ -114,12 +120,18 @@ func (b *jwtAutoRolesAuthBackend) pathConfigWrite(
 		UserClaim:   d.Get("user_claim").(string),
 	}
 
-	_, err := parseRoles(&config)
-	if err != nil {
+	vaultToken := d.Get("vault_token").(string)
+	if vaultToken != "" {
+		if err := b.fetchRolesInto(ctx, &config, vaultToken); err != nil {
+			return nil, err
+		}
+	}
+
+	if _, err := parseRoles(&config); err != nil {
 		return nil, fmt.Errorf("failed to parse roles: %w", err)
 	}
 
-	if err := writeConfig(ctx, req.Storage, config); err != nil {
+	if err := writeConfig(ctx, req.Storage, &config); err != nil {
 		return nil, err
 	}
 
@@ -127,7 +139,7 @@ func (b *jwtAutoRolesAuthBackend) pathConfigWrite(
 	return nil, nil
 }
 
-func writeConfig(ctx context.Context, storage logical.Storage, config jwtAutoRolesConfig) error {
+func writeConfig(ctx context.Context, storage logical.Storage, config *jwtAutoRolesConfig) error {
 	entry, err := logical.StorageEntryJSON(configPath, config)
 	if err != nil {
 		return fmt.Errorf("failed to create storage: %w", err)

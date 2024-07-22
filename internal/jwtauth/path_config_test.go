@@ -43,6 +43,49 @@ func TestConfig_Write(t *testing.T) {
 	}
 }
 
+func TestConfig_WriteWithToken(t *testing.T) {
+	t.Parallel()
+
+	configData := testConfig()
+	configData["vault_token"] = "secret"
+	roles := configData["roles"].(map[string]any)
+	delete(configData, "roles")
+
+	backend, storage := createTestBackend(t)
+	var roleClient fakeRoleFetcher = func(_ context.Context, vaultToken string) (map[string]any, error) {
+		return roles, nil
+	}
+	backend.roleClient = roleClient
+
+	req := &logical.Request{
+		Operation: logical.UpdateOperation,
+		Path:      configPath,
+		Storage:   storage,
+		Data:      configData,
+	}
+
+	resp, err := backend.HandleRequest(context.Background(), req)
+	if err != nil || (resp != nil && resp.IsError()) {
+		t.Fatalf("err:%s resp:%#v\n", err, resp)
+	}
+
+	conf, err := backend.config(context.Background(), storage)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expected := &jwtAutoRolesConfig{
+		Roles:       roles,
+		JWTAuthHost: "http://localhost:8200",
+		JWTAuthPath: "foo/jwt",
+		UserClaim:   "user_email",
+	}
+
+	if !reflect.DeepEqual(expected, conf) {
+		t.Fatalf("expected did not match actual: expected %#v\n got %#v\n", expected, conf)
+	}
+}
+
 func TestConfig_Read(t *testing.T) {
 	t.Parallel()
 	backend, storage := createTestBackend(t)
