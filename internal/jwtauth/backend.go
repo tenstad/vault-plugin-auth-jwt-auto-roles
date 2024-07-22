@@ -137,12 +137,12 @@ func (b *jwtAutoRolesAuthBackend) roleFetcher(config *jwtAutoRolesConfig) (roleF
 }
 
 func (b *jwtAutoRolesAuthBackend) fetchRolesInto(ctx context.Context, config *jwtAutoRolesConfig, vaultToken string) error {
-	roleClient, err := b.roleFetcher(config)
+	client, err := b.roleFetcher(config)
 	if err != nil {
 		return err
 	}
 
-	roles, err := roleClient.roles(ctx, vaultToken)
+	roles, err := client.roles(ctx, vaultToken)
 	if err != nil {
 		return err
 	}
