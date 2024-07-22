@@ -45,7 +45,7 @@ type policyFetcher interface {
 }
 
 type roleFetcher interface {
-	roles(ctx context.Context) (map[string]any, error)
+	roles(ctx context.Context, vaultToken string) (map[string]any, error)
 }
 
 func backend(_ *logical.BackendConfig) *jwtAutoRolesAuthBackend {
@@ -113,7 +113,10 @@ func (b *jwtAutoRolesAuthBackend) policyFetcher(config *jwtAutoRolesConfig) (pol
 	return b.policyClient, nil
 }
 
-func (b *jwtAutoRolesAuthBackend) roleFetcher(config *jwtAutoRolesConfig, vaultToken string) (roleFetcher, error) {
+func (b *jwtAutoRolesAuthBackend) roleFetcher(config *jwtAutoRolesConfig) (roleFetcher, error) {
+	b.l.Lock()
+	defer b.l.Unlock()
+
 	if b.roleClient != nil {
 		return b.roleClient, nil
 	}
@@ -126,21 +129,20 @@ func (b *jwtAutoRolesAuthBackend) roleFetcher(config *jwtAutoRolesConfig, vaultT
 		return nil, fmt.Errorf("failed to create vault client: %w", err)
 	}
 
-	// Don't write vaultClient to b.roleClient, to require vault token for each call
-	return &vaultClient{
+	b.roleClient = &vaultClient{
 		Client:    client,
 		mountPath: config.JWTAuthPath,
-		token:     vaultToken,
-	}, nil
+	}
+	return b.roleClient, nil
 }
 
 func (b *jwtAutoRolesAuthBackend) fetchRolesInto(ctx context.Context, config *jwtAutoRolesConfig, vaultToken string) error {
-	roleClient, err := b.roleFetcher(config, vaultToken)
+	roleClient, err := b.roleFetcher(config)
 	if err != nil {
 		return err
 	}
 
-	roles, err := roleClient.roles(ctx)
+	roles, err := roleClient.roles(ctx, vaultToken)
 	if err != nil {
 		return err
 	}
@@ -152,7 +154,6 @@ func (b *jwtAutoRolesAuthBackend) fetchRolesInto(ctx context.Context, config *jw
 type vaultClient struct {
 	*vault.Client
 	mountPath string
-	token     string
 }
 
 func (c *vaultClient) policies(ctx context.Context, request schema.JwtLoginRequest) ([]string, error) {
@@ -163,8 +164,8 @@ func (c *vaultClient) policies(ctx context.Context, request schema.JwtLoginReque
 	return r.Auth.Policies, nil
 }
 
-func (c *vaultClient) roles(ctx context.Context) (map[string]any, error) {
-	opts := []vault.RequestOption{vault.WithMountPath(c.mountPath), vault.WithToken(c.token)}
+func (c *vaultClient) roles(ctx context.Context, vaultToken string) (map[string]any, error) {
+	opts := []vault.RequestOption{vault.WithMountPath(c.mountPath), vault.WithToken(vaultToken)}
 	roles, err := c.Client.Auth.JwtListRoles(ctx, opts...)
 	if err != nil {
 		return nil, err
