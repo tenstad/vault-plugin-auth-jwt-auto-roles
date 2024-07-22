@@ -60,7 +60,7 @@ func pathConfig(backend *jwtAutoRolesAuthBackend) *framework.Path {
 			"vault_token": {
 				Type: framework.TypeString,
 				DisplayAttrs: &framework.DisplayAttributes{
-					Name: "Token to use when dynamically fetching roles instead of including them as configuration",
+					Name: "Token to use to fetch roles instead of including them in 'roles'",
 				},
 			},
 		},

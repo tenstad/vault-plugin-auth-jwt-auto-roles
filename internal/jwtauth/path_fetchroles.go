@@ -11,12 +11,11 @@ import (
 
 const (
 	pathFetchRolesHelpSyn = `
-Triggers plugin to fetch latest roles.
+Fetch and reconfigure roles.
 `
 	pathFetchRolesHelpDesc = `
-Triggers plugin to use configured vault_token to fetch all the configured
-jwt auth backend's roles. To be used whenever adding/removing roles in the
-configured auth backend.
+Fetches all of configured jwt auth backend's roles and persists them to config.
+To be used whenever adding/removing roles in the configured auth backend.
 `
 )
 
@@ -35,7 +34,7 @@ func pathFetchRoles(backend *jwtAutoRolesAuthBackend) *framework.Path {
 		Operations: map[logical.Operation]framework.OperationHandler{
 			logical.UpdateOperation: &framework.PathOperation{
 				Callback: backend.pathFetchRolesWrite,
-				Summary:  "Triggers plugin to fetch latest roles.",
+				Summary:  "Fetch and reconfigure roles.",
 			},
 		},
 
