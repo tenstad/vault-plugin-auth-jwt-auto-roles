@@ -40,8 +40,8 @@ func pathConfigRolesRefresh(backend *jwtAutoRolesAuthBackend) *framework.Path {
 			},
 		},
 
-		HelpSynopsis:    pathConfigHelpSyn,
-		HelpDescription: pathConfigHelpDesc,
+		HelpSynopsis:    pathConfigRolesRefreshHelpSyn,
+		HelpDescription: pathConfigRolesRefreshHelpDesc,
 	}
 }
 
