@@ -36,7 +36,7 @@ type jwtAutoRolesAuthBackend struct {
 	l            sync.RWMutex
 	cachedConfig *jwtAutoRolesConfig
 	roleIndex    *roleIndex
-	vaultClient  vaultFetcher
+	vaultFetcher vaultFetcher
 }
 
 type vaultFetcher interface {
@@ -55,6 +55,7 @@ func backend(_ *logical.BackendConfig) *jwtAutoRolesAuthBackend {
 		Paths: []*framework.Path{
 			pathLogin(&backend),
 			pathConfig(&backend),
+			pathFetchRoles(&backend),
 		},
 		RunningVersion: version.Version,
 	}
@@ -85,12 +86,12 @@ func (b *jwtAutoRolesAuthBackend) getRoleIndex(config *jwtAutoRolesConfig) (*rol
 	return index, nil
 }
 
-func (b *jwtAutoRolesAuthBackend) getVaultClient(config *jwtAutoRolesConfig) (vaultFetcher, error) {
+func (b *jwtAutoRolesAuthBackend) getVaultFetcher(config *jwtAutoRolesConfig) (vaultFetcher, error) {
 	b.l.Lock()
 	defer b.l.Unlock()
 
-	if b.vaultClient != nil {
-		return b.vaultClient, nil
+	if b.vaultFetcher != nil {
+		return b.vaultFetcher, nil
 	}
 
 	client, err := vault.New(
@@ -101,16 +102,16 @@ func (b *jwtAutoRolesAuthBackend) getVaultClient(config *jwtAutoRolesConfig) (va
 		return nil, fmt.Errorf("failed to create vault client: %w", err)
 	}
 
-	b.vaultClient = &vaultClient{
+	b.vaultFetcher = &vaultClient{
 		Client:    client,
 		mountPath: config.JWTAuthPath,
 		token:     config.VaultToken,
 	}
-	return b.vaultClient, nil
+	return b.vaultFetcher, nil
 }
 
 func (b *jwtAutoRolesAuthBackend) fetchRolesInto(ctx context.Context, config *jwtAutoRolesConfig) error {
-	client, err := b.getVaultClient(config)
+	client, err := b.getVaultFetcher(config)
 	if err != nil {
 		return err
 	}

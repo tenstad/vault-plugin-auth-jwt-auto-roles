@@ -45,7 +45,7 @@ func TestLogin_Write(t *testing.T) {
 		t.Fatalf("err:%s resp:%#v\n", err, resp)
 	}
 
-	backend.vaultClient = fakeVaultFetcher{
+	backend.vaultFetcher = fakeVaultFetcher{
 		policiesFn: func(_ context.Context, request schema.JwtLoginRequest) ([]string, error) {
 			return []string{request.Role + "-policy"}, nil
 		},

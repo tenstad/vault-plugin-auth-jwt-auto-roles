@@ -39,7 +39,7 @@ func TestConfig_Write(t *testing.T) {
 		VaultToken:  "secret",
 	}
 
-	if !reflect.DeepEqual(conf, expected) {
+	if !reflect.DeepEqual(expected, conf) {
 		t.Fatalf("expected did not match actual: expected %#v\n got %#v\n", expected, conf)
 	}
 }

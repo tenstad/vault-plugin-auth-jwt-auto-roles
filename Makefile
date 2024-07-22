@@ -40,6 +40,10 @@ configure:
 readconfig:
 	vault read --format=json auth/jwt-auto-roles/config
 
+.PHONY: fetchroles
+fetchroles:
+	vault write -force auth/jwt-auto-roles/fetchroles
+
 .PHONY: clean
 clean:
 	rm -rf ./bin ./build ./dist

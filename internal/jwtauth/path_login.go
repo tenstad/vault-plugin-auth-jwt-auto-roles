@@ -93,7 +93,7 @@ func (b *jwtAutoRolesAuthBackend) pathLogin(
 func (b *jwtAutoRolesAuthBackend) policies(
 	ctx context.Context, config *jwtAutoRolesConfig, roles []string, token string,
 ) ([]string, error) {
-	client, err := b.getVaultClient(config)
+	client, err := b.getVaultFetcher(config)
 	if err != nil {
 		return nil, err
 	}

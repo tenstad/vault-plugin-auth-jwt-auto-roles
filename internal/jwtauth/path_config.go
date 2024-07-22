@@ -131,7 +131,7 @@ func (b *jwtAutoRolesAuthBackend) pathConfigWrite(
 	if _, err := parseRoles(&config); err != nil {
 		return nil, fmt.Errorf("failed to parse roles: %w", err)
 	}
-	if err := writeConfig(ctx, req.Storage, config); err != nil {
+	if err := writeConfig(ctx, req.Storage, &config); err != nil {
 		return nil, err
 	}
 
@@ -139,7 +139,7 @@ func (b *jwtAutoRolesAuthBackend) pathConfigWrite(
 	return nil, nil
 }
 
-func writeConfig(ctx context.Context, storage logical.Storage, config jwtAutoRolesConfig) error {
+func writeConfig(ctx context.Context, storage logical.Storage, config *jwtAutoRolesConfig) error {
 	entry, err := logical.StorageEntryJSON(configPath, config)
 	if err != nil {
 		return fmt.Errorf("failed to create storage: %w", err)
