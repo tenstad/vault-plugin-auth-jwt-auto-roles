@@ -10,18 +10,20 @@ import (
 )
 
 const (
-	pathFetchRolesHelpSyn = `
+	configRolesRefreshPath string = "config/roles/refresh"
+
+	pathConfigRolesRefreshHelpSyn = `
 Fetch and reconfigure roles.
 `
-	pathFetchRolesHelpDesc = `
+	pathConfigRolesRefreshHelpDesc = `
 Fetches all of configured jwt auth backend's roles and persists them to config.
 To be used whenever adding/removing roles in the configured auth backend.
 `
 )
 
-func pathFetchRoles(backend *jwtAutoRolesAuthBackend) *framework.Path {
+func pathConfigRolesRefresh(backend *jwtAutoRolesAuthBackend) *framework.Path {
 	return &framework.Path{
-		Pattern: `fetchroles`,
+		Pattern: configRolesRefreshPath,
 		Fields: map[string]*framework.FieldSchema{
 			"vault_token": {
 				Type: framework.TypeString,
@@ -33,7 +35,7 @@ func pathFetchRoles(backend *jwtAutoRolesAuthBackend) *framework.Path {
 
 		Operations: map[logical.Operation]framework.OperationHandler{
 			logical.UpdateOperation: &framework.PathOperation{
-				Callback: backend.pathFetchRolesWrite,
+				Callback: backend.pathConfigRolesRefreshWrite,
 				Summary:  "Fetch and reconfigure roles.",
 			},
 		},
@@ -43,7 +45,7 @@ func pathFetchRoles(backend *jwtAutoRolesAuthBackend) *framework.Path {
 	}
 }
 
-func (b *jwtAutoRolesAuthBackend) pathFetchRolesWrite(
+func (b *jwtAutoRolesAuthBackend) pathConfigRolesRefreshWrite(
 	ctx context.Context, req *logical.Request, d *framework.FieldData,
 ) (*logical.Response, error) {
 	vaultToken, ok := d.Get("vault_token").(string)

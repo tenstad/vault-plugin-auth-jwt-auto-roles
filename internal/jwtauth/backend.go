@@ -59,7 +59,7 @@ func backend(_ *logical.BackendConfig) *jwtAutoRolesAuthBackend {
 		Paths: []*framework.Path{
 			pathLogin(&backend),
 			pathConfig(&backend),
-			pathFetchRoles(&backend),
+			pathConfigRolesRefresh(&backend),
 		},
 		RunningVersion: version.Version,
 	}

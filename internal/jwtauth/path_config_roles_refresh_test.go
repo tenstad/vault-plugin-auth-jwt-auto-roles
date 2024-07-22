@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/vault/sdk/logical"
 )
 
-func TestFetchRoles_Configures(t *testing.T) {
+func TestConfigRolesRefresh_Write(t *testing.T) {
 	t.Parallel()
 
 	configData := testConfig()
@@ -38,7 +38,7 @@ func TestFetchRoles_Configures(t *testing.T) {
 
 	req = &logical.Request{
 		Operation: logical.UpdateOperation,
-		Path:      "fetchroles",
+		Path:      configRolesRefreshPath,
 		Storage:   storage,
 		Data: map[string]any{
 			"vault_token": "secret",
