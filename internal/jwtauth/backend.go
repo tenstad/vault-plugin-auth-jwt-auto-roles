@@ -138,6 +138,21 @@ func (c *vaultClient) policies(ctx context.Context, request schema.JwtLoginReque
 	return r.Auth.Policies, nil
 }
 
-func (c *vaultClient) roles(_ context.Context) (map[string]any, error) {
-	return nil, nil
+func (c *vaultClient) roles(ctx context.Context) (map[string]any, error) {
+	opts := []vault.RequestOption{vault.WithMountPath(c.mountPath), vault.WithToken(c.token)}
+	roles, err := c.Client.Auth.JwtListRoles(ctx, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	roleClaims := make(map[string]any, len(roles.Data.Keys))
+	for _, name := range roles.Data.Keys {
+		role, err := c.Client.Auth.JwtReadRole(ctx, name, opts...)
+		if err != nil {
+			return nil, err
+		}
+		roleClaims[name] = role.Data["bound_claims"]
+	}
+
+	return roleClaims, nil
 }
