@@ -40,10 +40,10 @@ configure:
 readconfig:
 	vault read --format=json auth/jwt-auto-roles/config
 
-.PHONY: fetchroles
+.PHONY: refreshroles
 token=""
-fetchroles:
-	vault write auth/jwt-auto-roles/fetchroles vault_token="$(token)"
+refreshroles:
+	vault write auth/jwt-auto-roles/config/roles/refresh vault_token="$(token)"
 
 .PHONY: clean
 clean:
