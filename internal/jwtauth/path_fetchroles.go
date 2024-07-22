@@ -23,7 +23,14 @@ configured auth backend.
 func pathFetchRoles(backend *jwtAutoRolesAuthBackend) *framework.Path {
 	return &framework.Path{
 		Pattern: `fetchroles`,
-		Fields:  map[string]*framework.FieldSchema{},
+		Fields: map[string]*framework.FieldSchema{
+			"vault_token": {
+				Type: framework.TypeString,
+				DisplayAttrs: &framework.DisplayAttributes{
+					Name: "Token to use to fetch roles from configured jwt auth backend",
+				},
+			},
+		},
 
 		Operations: map[logical.Operation]framework.OperationHandler{
 			logical.UpdateOperation: &framework.PathOperation{
@@ -40,6 +47,11 @@ func pathFetchRoles(backend *jwtAutoRolesAuthBackend) *framework.Path {
 func (b *jwtAutoRolesAuthBackend) pathFetchRolesWrite(
 	ctx context.Context, req *logical.Request, d *framework.FieldData,
 ) (*logical.Response, error) {
+	vaultToken, ok := d.Get("vault_token").(string)
+	if !ok || vaultToken == "" {
+		return nil, errors.New("vault_token is required")
+	}
+
 	config, err := b.config(ctx, req.Storage)
 	if err != nil {
 		return nil, err
@@ -48,11 +60,7 @@ func (b *jwtAutoRolesAuthBackend) pathFetchRolesWrite(
 		return nil, errors.New("plugin is not configured")
 	}
 
-	if config.VaultToken == "" {
-		return nil, errors.New("vault_token is not configured")
-	}
-
-	if err := b.fetchRolesInto(ctx, config); err != nil {
+	if err := b.fetchRolesInto(ctx, config, vaultToken); err != nil {
 		return nil, err
 	}
 

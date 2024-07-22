@@ -27,7 +27,6 @@ type jwtAutoRolesConfig struct {
 	JWTAuthHost string         `json:"jwt_auth_host"`
 	JWTAuthPath string         `json:"jwt_auth_path"`
 	UserClaim   string         `json:"user_claim"`
-	VaultToken  string         `json:"vault_token"`
 }
 
 func pathConfig(backend *jwtAutoRolesAuthBackend) *framework.Path {
@@ -119,11 +118,11 @@ func (b *jwtAutoRolesAuthBackend) pathConfigWrite(
 		JWTAuthHost: d.Get("jwt_auth_host").(string),
 		JWTAuthPath: d.Get("jwt_auth_path").(string),
 		UserClaim:   d.Get("user_claim").(string),
-		VaultToken:  d.Get("vault_token").(string),
 	}
 
-	if config.VaultToken != "" {
-		if err := b.fetchRolesInto(ctx, &config); err != nil {
+	vaultToken := d.Get("vault_token").(string)
+	if vaultToken != "" {
+		if err := b.fetchRolesInto(ctx, &config, vaultToken); err != nil {
 			return nil, err
 		}
 	}
@@ -161,18 +160,11 @@ func (b *jwtAutoRolesAuthBackend) pathConfigRead(
 		return nil, nil
 	}
 
-	// Avoid sensitive config.Token
-	vaultToken := ""
-	if config.VaultToken != "" {
-		vaultToken = "***"
-	}
-
 	return &logical.Response{
 		Data: map[string]any{
 			"roles":         config.Roles,
 			"jwt_auth_host": config.JWTAuthHost,
 			"jwt_auth_path": config.JWTAuthPath,
-			"vault_token":   vaultToken,
 			"user_claim":    config.UserClaim,
 		},
 	}, nil

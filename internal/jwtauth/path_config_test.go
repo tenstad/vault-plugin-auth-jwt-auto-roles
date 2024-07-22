@@ -36,7 +36,6 @@ func TestConfig_Write(t *testing.T) {
 		JWTAuthHost: "http://localhost:8200",
 		JWTAuthPath: "foo/jwt",
 		UserClaim:   "user_email",
-		VaultToken:  "secret",
 	}
 
 	if !reflect.DeepEqual(expected, conf) {
@@ -73,7 +72,6 @@ func TestConfig_Read(t *testing.T) {
 		t.Fatalf("err:%s resp:%#v\n", err, resp)
 	}
 
-	configData["vault_token"] = "***"
 	if diff := deep.Equal(resp.Data, configData); diff != nil {
 		t.Fatalf("Expected did not equal actual: %v", diff)
 	}

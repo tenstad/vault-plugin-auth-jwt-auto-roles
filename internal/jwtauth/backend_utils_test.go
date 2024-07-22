@@ -30,15 +30,6 @@ func createTestBackend(t *testing.T) (*jwtAutoRolesAuthBackend, logical.Storage)
 	if !ok {
 		t.Fatal("backend is not a jwtAutoRolesAuthBackend")
 	}
-	backend.vaultFetcher = fakeVaultFetcher{
-		rolesFn: func(_ context.Context) (map[string]any, error) {
-			roles, ok := testConfig()["roles"].(map[string]any)
-			if !ok {
-				t.Fatal("roles are not of expected type")
-			}
-			return roles, nil
-		},
-	}
 
 	return backend, config.StorageView
 }
@@ -60,6 +51,5 @@ func testConfig() map[string]any {
 		"jwt_auth_host": "http://localhost:8200",
 		"jwt_auth_path": "foo/jwt",
 		"user_claim":    "user_email",
-		"vault_token":   "secret",
 	}
 }

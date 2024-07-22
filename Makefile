@@ -41,8 +41,9 @@ readconfig:
 	vault read --format=json auth/jwt-auto-roles/config
 
 .PHONY: fetchroles
+token=""
 fetchroles:
-	vault write -force auth/jwt-auto-roles/fetchroles
+	vault write auth/jwt-auto-roles/fetchroles vault_token="$(token)"
 
 .PHONY: clean
 clean:
