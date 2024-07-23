@@ -69,6 +69,8 @@ func (b *jwtAutoRolesAuthBackend) reset() {
 	defer b.l.Unlock()
 	b.cachedConfig = nil
 	b.roleIndex = nil
+	b.roleClient = nil
+	b.policyClient = nil
 }
 
 func (b *jwtAutoRolesAuthBackend) getRoleIndex(config *jwtAutoRolesConfig) (*roleIndex, error) {
