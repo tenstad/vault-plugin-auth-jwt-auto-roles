@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"sync"
-	"time"
 
 	"github.com/hashicorp/vault-client-go"
 	"github.com/hashicorp/vault-client-go/schema"
@@ -19,7 +18,6 @@ const (
 The JWT auto roles auth plugin allows automatic authentication with all roles
 matching a JWT (or OIDC) token.
 `
-	vaultClientTimeoutSeconds = 5
 )
 
 func Factory(ctx context.Context, c *logical.BackendConfig) (logical.Backend, error) {
@@ -100,7 +98,6 @@ func (b *jwtAutoRolesAuthBackend) policyFetcher(config *jwtAutoRolesConfig) (pol
 
 	client, err := vault.New(
 		vault.WithAddress(config.JWTAuthHost),
-		vault.WithRequestTimeout(vaultClientTimeoutSeconds*time.Second),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create vault client: %w", err)
@@ -123,7 +120,6 @@ func (b *jwtAutoRolesAuthBackend) roleFetcher(config *jwtAutoRolesConfig) (roleF
 
 	client, err := vault.New(
 		vault.WithAddress(config.JWTAuthHost),
-		vault.WithRequestTimeout(vaultClientTimeoutSeconds*time.Second),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create vault client: %w", err)
