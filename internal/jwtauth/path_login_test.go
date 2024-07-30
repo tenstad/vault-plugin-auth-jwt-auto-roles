@@ -81,7 +81,7 @@ func TestLogin_Write(t *testing.T) {
 		},
 		{
 			claims: jwt.MapClaims{
-				"no_rolehas_this": "baz",
+				"no_role_has_this": "baz",
 			},
 			err: "unable to log into any role",
 		},
