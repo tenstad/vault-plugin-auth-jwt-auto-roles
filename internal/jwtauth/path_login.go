@@ -3,7 +3,6 @@ package jwtauth
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"time"
 
 	jwt "github.com/golang-jwt/jwt/v5"
@@ -81,11 +80,7 @@ func (b *jwtAutoRolesAuthBackend) pathLogin(
 	}
 
 	if len(policies) == 0 {
-		return logical.RespondWithStatusCode(
-			logical.ErrorResponse("Unable to log into any role"),
-			req,
-			http.StatusForbidden,
-		)
+		return logical.ErrorResponse("unable to log into any role"), nil
 	}
 
 	return &logical.Response{

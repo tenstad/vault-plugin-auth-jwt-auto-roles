@@ -58,10 +58,7 @@ func TestLogin_Write(t *testing.T) {
 	for i, tt := range []struct {
 		claims   jwt.MapClaims
 		policies []string
-		err      *struct {
-			msg  string
-			code int
-		}
+		err      string
 	}{
 		{
 			claims: jwt.MapClaims{
@@ -84,15 +81,9 @@ func TestLogin_Write(t *testing.T) {
 		},
 		{
 			claims: jwt.MapClaims{
-				"no_role_has_this": "baz",
+				"no_rolehas_this": "baz",
 			},
-			err: &struct {
-				msg  string
-				code int
-			}{
-				msg:  "Unable to log into any role",
-				code: 403,
-			},
+			err: "unable to log into any role",
 		},
 	} {
 		token, err := jwt.NewWithClaims(jwt.SigningMethodPS512, tt.claims).SignedString(privateKey)
@@ -114,12 +105,12 @@ func TestLogin_Write(t *testing.T) {
 			t.Fatalf("unable to handle request: %s", err.Error())
 		}
 
-		if tt.err != nil {
-			expectedResponse, err := logical.RespondWithStatusCode(logical.ErrorResponse(tt.err.msg), nil, tt.err.code)
-			if err != nil {
-				t.Fatalf("unable to create expected error response: %s", err.Error())
+		if tt.err != "" {
+			respErr := resp.Error()
+			if respErr == nil {
+				t.Fatalf("Test case %v failed. Expected to fail with err '%s', but did not.", i, tt.err)
 			}
-			if diff := cmp.Diff(resp, expectedResponse); diff != "" {
+			if diff := cmp.Diff(tt.err, respErr.Error()); diff != "" {
 				t.Fatalf("Test case %v failed with diff:\n%s", i, diff)
 			}
 			continue
